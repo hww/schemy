@@ -65,16 +65,16 @@ namespace Schemy
             }
         }
 
+        public static string NULL_SETRING = "null";
+        
         public static string PrintExpr(object x)
         {
             if (x is bool)
-            {
                 return (bool)x ? "#t" : "#f";
-            }
             else if (x is Symbol) return ((Symbol)x).AsString;
             else if (x is string) return string.Format(@"""{0}""", x);
             else if (x is List<object>) return string.Format("({0})", string.Join(" ", ((List<object>)x).Select(a => PrintExpr(a))));
-            else if (x == null) return string.Empty;
+            else if (x == null) return NULL_SETRING;
             else return x.ToString();
         }
 
