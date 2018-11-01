@@ -1,4 +1,4 @@
-# HWW Schemy
+# Ths version of Schemy
 
 Original Shcemy with my pretty printer<sup>Work in progress</sup>.
 
