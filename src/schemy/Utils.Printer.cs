@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using Code.DataStructures;
-using UnityEditor.IMGUI.Controls;
-using UnityEngine;
-using Code.DataStructures;
-using UnityEngine.Experimental.Rendering.HDPipeline;
 
 namespace Schemy
 {
@@ -157,7 +151,7 @@ namespace Schemy
 		/// the standard readtable is in effect, will produce an object O2 that is similar to O1. The printed
 		/// representation produced might or might not be the same as the printed representation produced
 		/// when *print-readably* is false. If printing an object readably is not possible, an error of type
-		/// print-not-readable is signaled rather than using a syntax (e.g., the "#<" syntax) that would not
+		/// print-not-readable is signaled rather than using a syntax (e.g., the <![CDATA['#<']]> syntax) that would not
 		/// be readable by the same implementation. If the value of some other printer control variable is
 		/// such that these requirements would be violated, the value of that other variable is ignored. 
 		/// </summary>
@@ -278,9 +272,9 @@ namespace Schemy
 			/// <summary>A simple string holding all the text that has been output but not yet printed</summary>
 			private readonly StringBuilder Buffer;
 			/// <summary>Stack of logical blocks in effect at the buffer start.</summary>
-			private readonly DLinkedList<LogicalBlock> Blocks;
+			private readonly LinkedList<LogicalBlock> Blocks;
 			/// <summary>Block-start queue entries in effect at the queue head.</summary>
-			private readonly DLinkedList<LogicalBlock> PenddingBlocks;
+			private readonly LinkedList<LogicalBlock> PenddingBlocks;
 			/// <summary>Current column of the stream</summary>
 			public int Column;
 			/// <summary>
@@ -314,7 +308,7 @@ namespace Schemy
 			public LogicalBlock PopLogicalBlock()
 			{
 				var item = Blocks.Last;
-				item.Remove(); 
+			    Blocks.Remove(item); 
 				return item.Value; 
 			}
 			/// <summary>Add top element of the stack</summary>
@@ -327,9 +321,9 @@ namespace Schemy
 			{
 				Stream = stream;
 				Buffer = new StringBuilder();
-				QueueList = new DLinkedList<QueuedOp>();
-				Blocks = new DLinkedList<LogicalBlock>();
-				PenddingBlocks = new DLinkedList<LogicalBlock>();
+				QueueList = new LinkedList<QueuedOp>();
+				Blocks = new LinkedList<LogicalBlock>();
+				PenddingBlocks = new LinkedList<LogicalBlock>();
 				LogicalBlock block = new LogicalBlock();
 				PushLogicalBlock(block);
 			}
@@ -344,7 +338,7 @@ namespace Schemy
 			/// new)) and removing them is basically (pop tail) [except that care must
 			/// be taken to handle the empty queue case correctly.]
 			/// </summary>
-			private readonly DLinkedList<QueuedOp> QueueList;
+			private readonly LinkedList<QueuedOp> QueueList;
 			/// <summary>Enqueue one operation. Before that enqueue also all printed string</summary>
 			private void Enqueue	(QueuedOp operation)
 			{
@@ -430,7 +424,7 @@ namespace Schemy
 				while (curent != null)
 				{
 					var next = curent.Next;
-					curent.Remove();
+				    QueueList.Remove(curent);
 					if (curent.Value == op)
 						return;
 					curent = next;
@@ -535,17 +529,16 @@ namespace Schemy
 			/// <param name="list"></param>
 			public void PrintDispatched(List<object> list)
 			{
-
 			}
-			// =============================================================================================================
-			// IMPLEMENTED SOME OF STANDARD LOGICAL BLOCKS
-			// =============================================================================================================
-			/// <summary>
-			/// Output LIST to STREAM putting :LINEAR conditional newlines between each
-			/// element.  If COLON? is NIL (defaults to T), then no parens are printed
-			///	around the output. 
-			/// </summary>
-			void PrintLinear(List<object> list, bool colon = true)
+            // =============================================================================================================
+            // IMPLEMENTED SOME OF STANDARD LOGICAL BLOCKS
+            // =============================================================================================================
+            /// <summary>
+            /// Output LIST to STREAM putting :LINEAR conditional newlines between each
+            /// element.  If COLON? is NIL (defaults to T), then no parens are printed
+            ///	around the output. 
+            /// </summary>
+            public void PrintLinear(List<object> list, bool colon = true)
 			{
 				PrintLogicalBlock(list, colon ? "(" : null, colon ? ")" : null, null,
 					(PrettyStream stream, List<object> thislist) =>
@@ -563,12 +556,12 @@ namespace Schemy
 						}
 					});
 			}
-			/// <summary>
-			/// Output LIST to STREAM putting :FILL conditional newlines between each
-			/// element.  If COLON? is false (defaults to true), then no parens are printed
-			///	around the output. 
-			/// </summary>
-			void PrintFill(List<object> list, bool colon = true)
+            /// <summary>
+            /// Output LIST to STREAM putting :FILL conditional newlines between each
+            /// element.  If COLON? is false (defaults to true), then no parens are printed
+            ///	around the output. 
+            /// </summary>
+            public void PrintFill(List<object> list, bool colon = true)
 			{
 				PrintLogicalBlock(list, colon ? "(" : null, colon ? ")" : null, null,
 					(PrettyStream stream, List<object> thislist) =>
@@ -586,13 +579,13 @@ namespace Schemy
 						}
 					});
 			}
-			/// <summary>
-			/// Output LIST to STREAM tabbing to the next column that is an even multiple
-			/// of TABSIZE (which defaults to 16) between each element.  :FILL style
-			/// conditional newlines are also output between each element.  If COLON? is
-			/// false (defaults to true), then no parens are printed around the output.
-			/// </summary>
-			void PrintTabular(List<object> list, bool colon = true, int tabsize = 16)
+            /// <summary>
+            /// Output LIST to STREAM tabbing to the next column that is an even multiple
+            /// of TABSIZE (which defaults to 16) between each element.  :FILL style
+            /// conditional newlines are also output between each element.  If COLON? is
+            /// false (defaults to true), then no parens are printed around the output.
+            /// </summary>
+            public void PrintTabular(List<object> list, bool colon = true, int tabsize = 16)
 			{
 				PrintLogicalBlock(list, colon ? "(" : null, colon ? ")" : null, null,
 					(PrettyStream stream, List<object> thislist) =>
@@ -628,10 +621,11 @@ namespace Schemy
 			
 			public int IndexColumn(int endColumn)
 			{
+                /*
 				var column = Stream.BufferStartColumn;
 				var sectionStart = LogicalBlock.SectionColumn;
-
 				var curent = QueueList.First;
+
 				while (curent != null)
 				{
 					var op = curent.Value;
@@ -649,7 +643,8 @@ namespace Schemy
 					}
 					curent = curent.Next;
 				}
-				return column + index;
+				return column + index; */
+			    return 0;
 			}
 
 
@@ -703,7 +698,7 @@ namespace Schemy
 						var tabSize = ComputeTabSize(tab, sectionStart, streamColumn + index);
 						if (tabSize != 0)
 						{
-							insertions.Add(new Pair(index, tabSize));
+//							insertions.Add(new Pair(index, tabSize));
 							additional += tabSize;
 							streamColumn += tabSize;
 						}
@@ -739,7 +734,7 @@ namespace Schemy
 				{
 					var next = curent.Next;
 					var item = curent.Value;
-					curent.Remove();
+				    QueueList.Remove(curent);
 
 					if (item is StringOp)
 					{
@@ -762,7 +757,7 @@ namespace Schemy
 							case NewLine.EKind.Fill:
 								break;
 							case NewLine.EKind.Mantadory:
-								Write('\n');
+								Write("\n");
 								Column = 0;
 								outputAnything = true;
 								break;
@@ -945,7 +940,7 @@ namespace Schemy
 				// -- set stream prefix string. make it bigger if need.
 				if (column > streamPrefixLen)
 				{
-					var size = Math.Max(streamPrefixLen * 2, streamPrefixLen + (int)Mathf.Floor((float)(column - streamPrefixLen) * 5) / 4);
+					var size = Math.Max(streamPrefixLen * 2, streamPrefixLen + (int)Math.Floor((float)(column - streamPrefixLen) * 5) / 4);
 					var newstring = new char[size];
 					Lisp.Replace(newstring, Prefix, end1: blockPrefixLength);
 					Prefix = newstring;
@@ -969,20 +964,38 @@ namespace Schemy
 				if (newIndent > oldIndent)
 					Lisp.Fill<char>(Prefix, ' ', oldIndent, newIndent);
 			}
-	
 		}
 	}
 
-
+    /// <summary>
+    /// Methods with behaviour smilar to the Lisp language
+    /// </summary>
 	public static class Lisp
 	{
+        /// <summary>
+        /// Fill sequence by given item
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequence">Array of elements with T type</param>
+        /// <param name="item">Value used to fill</param>
+        /// <param name="start">Index of first element</param>
+        /// <param name="end">Index of last elements</param>
 		public static void Fill<T>(T[] sequence, T item, int start, int end)
 		{
 			for (var i = start; i < end; i++)
 				sequence[i] = item;
 		}
-		
-		public static void Replace<T>(T[] sequence1, T[] sequence2, int start1 = 0, int end1 = -1, int start2 = 0, int end2 = -1)
+        /// <summary>
+        /// Replace elements in one array to elements of another array
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sequence1">Target sequence</param>
+        /// <param name="sequence2">Source sequence</param>
+        /// <param name="start1">Index of first element (seq1)</param>
+        /// <param name="end1">Index of last element (seq1)</param>
+        /// <param name="start2">Index of first element (seq2)</param>
+        /// <param name="end2">Index of first element (seq2)</param>
+        public static void Replace<T>(T[] sequence1, T[] sequence2, int start1 = 0, int end1 = -1, int start2 = 0, int end2 = -1)
 		{
 			if (end1 < 0) end1 = sequence1.Length;
 			if (end2 < 0) end1 = sequence2.Length;
