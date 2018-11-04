@@ -10,6 +10,8 @@ namespace Schemy
     {
         public static void Main(string[] args)
         {
+            PrettyPriner.defaultOutput = Console.Out;
+
             if (args.Length > 0 && File.Exists(args[0]))
             {
                 // evaluate input file's content
@@ -33,6 +35,8 @@ namespace Schemy
                     "| Press Ctrl-C to exit                        |",
                     "-----------------------------------------------",
                 };
+                var stingReader = new StringReader("(print-linear '(1 2 3) #t)");
+                var result = interpreter.Evaluate(stingReader);
 
                 interpreter.REPL(Console.In, Console.Out, "Schemy> ", headers);
             }

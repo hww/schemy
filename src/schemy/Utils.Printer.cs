@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.IO;
 using System.Linq;
@@ -156,12 +157,46 @@ namespace Schemy
 		/// such that these requirements would be violated, the value of that other variable is ignored. 
 		/// </summary>
 		public static bool PrintReadably;
+        /// <summary>
+        /// Default output stream
+        /// </summary>
+	    public static TextWriter defaultOutput;
+        
+	    public static object PrintLinear(List<object> list, bool colony, TextWriter output = null)
+	    {
+	        if (output == null)
+	            output = defaultOutput;
+            Debug.Assert(output != null);
+	        var pp = new PrettyPriner.PrettyStream(output);
+	        pp.PrintLinear(list, false);
+	        return null;
+	    }
 
-		// =============================================================================================================
-		// QUEUE OPERATIONS
-		// =============================================================================================================
-		/// <summary>All pretty print commands innerinced from this class</summary>
-		public abstract class QueuedOp
+	    public static object PrintFill(List<object> list, bool colony, TextWriter output = null)
+	    {
+	        if (output == null)
+	            output = defaultOutput;
+	        Debug.Assert(output != null);
+	        var pp = new PrettyPriner.PrettyStream(output);
+	        pp.PrintFill(list, false);
+	        return null;
+	    }
+
+	    public static object PrintTabular(List<object> list, bool colony, TextWriter output = null)
+	    {
+	        if (output == null)
+	            output = defaultOutput;
+	        Debug.Assert(output != null);
+	        var pp = new PrettyPriner.PrettyStream(output);
+	        pp.PrintTabular(list, false);
+	        return null;
+	    }
+
+        // =============================================================================================================
+        // QUEUE OPERATIONS
+        // =============================================================================================================
+        /// <summary>All pretty print commands innerinced from this class</summary>
+        public abstract class QueuedOp
 		{
 			/// <summary>Start column of this operation </summary>
 			public int Column;
@@ -268,7 +303,7 @@ namespace Schemy
 		public sealed class PrettyStream
 		{
 			/// <summary>Where the output is going to finally go.</summary>
-			private readonly StreamWriter Stream;
+			private readonly TextWriter Stream;
 			/// <summary>A simple string holding all the text that has been output but not yet printed</summary>
 			private readonly StringBuilder Buffer;
 			/// <summary>Stack of logical blocks in effect at the buffer start.</summary>
@@ -282,7 +317,7 @@ namespace Schemy
 			/// to tell when sections have been split across multiple lines.
 			/// </summary>
 			public int LineNumber;
-			/// <summary>Curent indentinaton</summary>			
+			/// <summary>Curent indentinaton</summary>
 			public int Identination;
 			/// <summary>
 			/// Buffer holding the per-line prefix active at the buffer start.
@@ -317,7 +352,7 @@ namespace Schemy
 			/// Constructors
 			///=========================================================================================================
 
-			public PrettyStream(StreamWriter stream)
+			public PrettyStream(TextWriter stream)
 			{
 				Stream = stream;
 				Buffer = new StringBuilder();
@@ -365,13 +400,15 @@ namespace Schemy
 				while (current!=null)
 				{
 					var sectionStart = current.Value as SectionStart;
-					if (sectionStart==null) continue;
-					if (sectionStart != newline && dept == sectionStart.Depth && sectionStart.SectionEnd == null)
-					{
-						sectionStart.SectionEnd = new NewLine();
-						break;
-					}
-					current = current.Previous;
+				    if (sectionStart != null)
+				    {
+				        if (sectionStart != newline && dept == sectionStart.Depth && sectionStart.SectionEnd == null)
+				        {
+				            sectionStart.SectionEnd = new NewLine();
+				            break;
+				        }
+				    }
+                    current = current.Previous;
 				}
 
 				MaybeOuput(kind == NewLine.EKind.Mantadory);
@@ -548,7 +585,7 @@ namespace Schemy
 							if (stream.IsListExhausted())
 								return;
 							var item = stream.PrintPop();
-							stream.PrintObject(thislist[0]);
+							stream.PrintObject(item);
 							if (stream.IsListExhausted())
 								return;
 							stream.PrintString(" ");
@@ -571,7 +608,7 @@ namespace Schemy
 							if (stream.IsListExhausted())
 								return;
 							var item = stream.PrintPop();
-							stream.PrintObject(thislist[0]);
+							stream.PrintObject(item);
 							if (stream.IsListExhausted())
 								return;
 							stream.PrintString(" ");
@@ -595,7 +632,7 @@ namespace Schemy
 							if (stream.IsListExhausted())
 								return;
 							var item = stream.PrintPop();
-							stream.PrintObject(thislist[0]);
+							stream.PrintObject(item);
 							if (stream.IsListExhausted())
 								return;
 							stream.PrintString(" ");
@@ -729,14 +766,14 @@ namespace Schemy
 			public bool MaybeOuput(bool forceNewLines)
 			{
 				bool outputAnything = false;
-				var curent = QueueList.First;
-				while (curent == null)
+		
+				while (QueueList.First != null)
 				{
-					var next = curent.Next;
+				    var curent = QueueList.First;
 					var item = curent.Value;
 				    QueueList.Remove(curent);
 
-					if (item is StringOp)
+                    if (item is StringOp)
 					{
 						// -- write string to the output stream and update column position
 						var str = item as StringOp;
@@ -844,8 +881,6 @@ namespace Schemy
 					{
 						ExpandTabs(item as Tab);
 					}
-
-					curent = next;
 				}
 
 				return outputAnything;
@@ -867,7 +902,7 @@ namespace Schemy
 			/// <summary> Write string to the stream and update Column</summary>
 			private void Write(string s)
 			{
-				if (s != null)
+				if (s == null)
 					throw new ArgumentOutOfRangeException(nameof(s), s, null);
 				Stream.Write(s);
 				Column += s.Length;	
@@ -964,8 +999,8 @@ namespace Schemy
 				if (newIndent > oldIndent)
 					Lisp.Fill<char>(Prefix, ' ', oldIndent, newIndent);
 			}
-		}
-	}
+        }
+    }
 
     /// <summary>
     /// Methods with behaviour smilar to the Lisp language

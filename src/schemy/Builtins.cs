@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Text;
+
 namespace Schemy
 {
     using System;
@@ -49,6 +51,21 @@ namespace Schemy
             builtins[Symbol.FromString("null?")] = NativeProcedure.Create<object, bool>(x => x is List<object> && ((List<object>)x).Count == 0, "null?");
             builtins[Symbol.FromString("assert")] = new NativeProcedure(AssertImpl, "assert");
             builtins[Symbol.FromString("load")] = NativeProcedure.Create<string, None>(filename => LoadImpl(interpreter, filename), "load");
+
+            builtins[Symbol.FromString("print-linear")] = NativeProcedure.Create<List<object>, bool, object>((list, colony) =>
+            {
+                return PrettyPriner.PrintLinear(list, false);
+            }, "print-linear");
+
+            builtins[Symbol.FromString("print-fill")] = NativeProcedure.Create<List<object>, bool, object>((list, colony) =>
+            {
+                return PrettyPriner.PrintFill(list, false);
+            }, "print-tabular");
+
+            builtins[Symbol.FromString("print-fill")] = NativeProcedure.Create<List<object>, bool, object>((list, colony) =>
+            {
+                return PrettyPriner.PrintTabular(list, false);
+            }, "print-tabular");
 
             return builtins;
         }

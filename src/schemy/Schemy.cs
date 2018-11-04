@@ -82,7 +82,7 @@ namespace Schemy
             object res = null;
             while (true)
             {
-                try
+                //try
                 {
                     var expr = Expand(Read(port), environment, macroTable, true);
                     if (Symbol.EOF.Equals(expr))
@@ -94,10 +94,10 @@ namespace Schemy
                         res = EvaluateExpression(expr, environment);
                     }
                 }
-                catch (Exception e)
-                {
-                    return new EvaluationResult(e, null);
-                }
+                //catch (Exception e)
+                //{
+                //    return new EvaluationResult(e, null);
+                //}
             }
         }
 

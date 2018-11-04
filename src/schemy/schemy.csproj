@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="Builtins.cs" />
     <Compile Include="CommonTypes.cs" />
-    <Compile Include="DataStructures\DLinkedList.cs" />
     <Compile Include="Env.cs" />
     <Compile Include="FileSystemAccessor.cs" />
     <Compile Include="Procedure.cs" />
@@ -61,6 +60,9 @@
     <EmbeddedResource Include="init.ss">
       <LogicalName>init.ss</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PrettyPrinter.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

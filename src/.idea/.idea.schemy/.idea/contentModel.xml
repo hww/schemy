@@ -4,6 +4,7 @@
     <e p="C:\Users\valery\.Rider2018.1\system\resharper-host\local\Transient\ReSharperHost\v12\SolutionCaches\_schemy.-1266423823.00" t="ExcludeRecursive" />
     <e p="D:\projects\github\schemy\src" t="IncludeFlat">
       <e p="examples\command_server" t="IncludeRecursive">
+        <e p="app.config" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="example.command_server.csproj" t="IncludeRecursive" />
         <e p="obj" t="ExcludeRecursive" />
@@ -11,6 +12,7 @@
         <e p="Properties" t="Include" />
       </e>
       <e p="examples\repl" t="IncludeRecursive">
+        <e p="app.config" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="example.repl.csproj" t="IncludeRecursive" />
         <e p="obj" t="ExcludeRecursive" />
@@ -34,9 +36,11 @@
         <e p="schemy.csproj" t="IncludeRecursive" />
         <e p="Symbol.cs" t="Include" />
         <e p="Utils.cs" t="Include" />
+        <e p="Utils.Printer.cs" t="Include" />
       </e>
       <e p="schemy.sln" t="IncludeFlat" />
       <e p="test" t="IncludeRecursive">
+        <e p="app.config" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="obj" t="ExcludeRecursive" />
         <e p="Program.cs" t="Include" />
