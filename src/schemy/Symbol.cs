@@ -52,10 +52,10 @@ namespace Schemy
             Symbol res;
             if (!table.TryGetValue(sym, out res))
             {
-                table[sym] = new Symbol(sym);
+                res = new Symbol(sym);
+                table[sym] = res;
             }
-
-            return table[sym];
+            return res;
         }
 
         #region wellknown symbols
